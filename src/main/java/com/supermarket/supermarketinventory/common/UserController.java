@@ -1,29 +1,36 @@
 package com.supermarket.supermarketinventory.common;
+
+import com.supermarket.supermarketinventory.dto.ChangePasswordDTO;
+import com.supermarket.supermarketinventory.dto.LoginRequestDTO;
 import com.supermarket.supermarketinventory.entity.SysUser;
 import com.supermarket.supermarketinventory.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/user")
 @CrossOrigin
 public class UserController {
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping("/login")
-    public Result<SysUser> login(@RequestBody SysUser userParam) {
-        try {
-            // 参数校验
-            if (userParam.getUsername() == null || userParam.getPassword() == null) {
-                return Result.error("用户名或密码不能为空");
-            }
-            // 调用业务逻辑
-            SysUser user = userService.login(userParam.getUsername(), userParam.getPassword());
-            // 返回成功数据（包含用户ID、名字、角色）
-            return Result.success(user);
-        } catch (Exception e) {
-            return Result.error(e.getMessage());
-        }
+    public Result<SysUser> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
+        SysUser user = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
+        return Result.success(user);
+    }
+
+    @PostMapping("/change-password")
+    public Result<Void> changePassword(@Valid @RequestBody ChangePasswordDTO request) {
+        userService.changePassword(request.getUsername(), request.getOldPassword(), request.getNewPassword());
+        return Result.success();
     }
 }

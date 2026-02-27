@@ -6,4 +6,10 @@
     <select id="selectByUsername" resultType="com.supermarket.supermarketinventory.entity.SysUser">
         SELECT * FROM sys_user WHERE username = #{username}
     </select>
+
+    <update id="updatePasswordById">
+        UPDATE sys_user
+        SET password = #{password}
+        WHERE id = #{id}
+    </update>
 </mapper>

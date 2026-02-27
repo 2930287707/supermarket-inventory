@@ -1,23 +1,30 @@
 # application.yml
 server:
-  port: 8080 # 端口号，如果是本机测试，默认8080即可
+  port: 8080
 
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/supermarket_db?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
-    username: root
-    password: root
+    url: ${DB_URL:jdbc:mysql://localhost:3306/supermarket_db?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
 
-  # MyBatis 配置 (让控制台打印SQL，方便调试)
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    map-underscore-to-camel-case: true # 开启驼峰命名自动转换（非常重要！数据库 user_name -> Java userName）
+    map-underscore-to-camel-case: true
 
-# PageHelper 分页配置
 pagehelper:
   helper-dialect: mysql
   reasonable: true
   support-methods-arguments: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

@@ -1,9 +1,14 @@
 package com.supermarket.supermarketinventory.common;
 
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.stream.Collectors;
 
 /**
  * 全局异常处理器
@@ -14,22 +19,28 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    /**
-     * 拦截所有 RuntimeException (包括我们自己抛出的 throw new RuntimeException("..."))
-     */
-    @ExceptionHandler(RuntimeException.class)
-    public Result<Void> handleRuntimeException(RuntimeException e) {
-        log.error("业务异常: {}", e.getMessage());
-        return Result.error(e.getMessage()); // 直接把错误信息传给前端
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Result<Void> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        String msg = e.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.joining("；"));
+        return Result.error(Result.BAD_REQUEST_CODE, msg);
     }
 
-    /**
-     * 拦截所有未知的 Exception (比如空指针、数据库连接失败等系统级错误)
-     * 系统级错误不应该把详细堆栈直接抛给前端，显示“系统繁忙”即可，但后台要记录日志
-     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public Result<Void> handleConstraintViolationException(ConstraintViolationException e) {
+        return Result.error(Result.BAD_REQUEST_CODE, e.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Result<Void> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.warn("业务校验异常: {}", e.getMessage());
+        return Result.error(Result.BAD_REQUEST_CODE, e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public Result<Void> handleException(Exception e) {
-        log.error("系统异常: ", e); // 记录完整堆栈用于排查
+        log.error("系统异常: ", e);
         return Result.error("系统繁忙，请联系管理员");
     }
 }
