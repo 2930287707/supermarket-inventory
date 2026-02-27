@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/src/main/resources/mapper/CategoryMapper.xml" value="67871da0-c4e1-4dbd-9e59-87561e79fb88" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/mapper/SupplierMapper.xml" value="67871da0-c4e1-4dbd-9e59-87561e79fb88" />
+  </component>
+</project>

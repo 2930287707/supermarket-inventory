@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.supermarket.supermarketinventory.mapper.CategoryMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO category (name, sort_order, create_time, update_time)
+        VALUES (#{name}, #{sortOrder}, NOW(), NOW())
+    </insert>
+
+    <update id="update">
+        UPDATE category
+        SET name = #{name},
+            sort_order = #{sortOrder},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+    <delete id="deleteById">
+        DELETE FROM category WHERE id = #{id}
+    </delete>
+
+    <select id="findAll" resultType="com.supermarket.supermarketinventory.entity.Category">
+        SELECT * FROM category ORDER BY sort_order ASC, create_time DESC
+    </select>
+
+    <select id="selectByName" resultType="com.supermarket.supermarketinventory.entity.Category">
+        SELECT * FROM category WHERE name = #{name}
+    </select>
+
+    <select id="selectById" resultType="com.supermarket.supermarketinventory.entity.Category">
+        SELECT * FROM category WHERE id = #{id}
+    </select>
+</mapper>

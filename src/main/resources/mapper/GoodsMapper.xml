@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 核心绑定：这里的 namespace 必须对应你的 Java 接口全路径 -->
+<mapper namespace="com.supermarket.supermarketinventory.mapper.GoodsMapper">
+
+    <!-- 1. 新增商品 -->
+    <!-- values() 里面的 #{属性名} 必须和 Java 实体类字段名一致 (驼峰) -->
+    <insert id="insert" parameterType="com.supermarket.supermarketinventory.entity.Goods" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO goods
+        (barcode, name, category, spec, price_in, price_out, stock_current, stock_warning, create_time, update_time)
+        VALUES
+            (#{barcode}, #{name}, #{category}, #{spec}, #{priceIn}, #{priceOut}, #{stockCurrent}, #{stockWarning}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!-- 2. 根据ID删除 -->
+    <delete id="deleteById">
+        DELETE FROM goods WHERE id = #{id}
+    </delete>
+
+    <!-- 3. 更新商品信息 -->
+    <update id="update">
+        UPDATE goods
+        SET
+            barcode = #{barcode},
+            name = #{name},
+            category = #{category},
+            spec = #{spec},
+            price_in = #{priceIn},
+            price_out = #{priceOut},
+            stock_warning = #{stockWarning},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 4. 根据ID查询 -->
+    <select id="selectById" resultType="com.supermarket.supermarketinventory.entity.Goods">
+        SELECT * FROM goods WHERE id = #{id}
+    </select>
+
+    <!-- 5. 根据条码查询 -->
+    <select id="selectByBarcode" resultType="com.supermarket.supermarketinventory.entity.Goods">
+        SELECT * FROM goods WHERE barcode = #{barcode}
+    </select>
+
+    <!-- 6. 查询页面 -->
+    <select id="findPage" resultType="com.supermarket.supermarketinventory.entity.Goods">
+        SELECT * FROM goods
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="barcode != null and barcode != ''">
+                AND barcode = #{barcode}
+            </if>
+        </where>
+        ORDER BY update_time DESC
+    </select>
+    <update id="updateStock">
+        UPDATE goods
+        SET stock_current = stock_current + #{change},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+    <select id="selectStockWarning" resultType="com.supermarket.supermarketinventory.entity.Goods">
+        SELECT *
+        FROM goods
+        WHERE stock_current &lt; stock_warning
+    </select>
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM goods
+    </select>
+
+    <select id="countDistinctCategory" resultType="int">
+        <!-- 统计去重后的分类数量 -->
+        SELECT COUNT(DISTINCT category) FROM goods
+    </select>
+    <select id="countByCategory" resultType="long">
+        SELECT COUNT(*) FROM goods WHERE category = #{categoryName}
+    </select>
+    <update id="updateCategoryName">
+        UPDATE goods
+        SET category = #{newName}, update_time = NOW()
+        WHERE category = #{oldName}
+    </update>
+
+    <select id="selectByBarcodeAndNotId" resultType="com.supermarket.supermarketinventory.entity.Goods">
+        SELECT * FROM goods WHERE barcode = #{barcode} AND id != #{id}
+    </select>
+    <select id="sumStockByCategory" resultType="com.supermarket.supermarketinventory.vo.ChartDataVO">
+        SELECT category AS name, IFNULL(SUM(stock_current), 0) AS value
+        FROM goods
+        GROUP BY category
+    </select>
+</mapper>
+
