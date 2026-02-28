@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/purchase")
 @CrossOrigin
-@RequireRole({"ADMIN", "MANAGER", "STAFF"})
+@RequireRole({"ADMIN", "STAFF", "PURCHASER"})
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
@@ -31,8 +31,8 @@ public class PurchaseOrderController {
     }
 
     @PostMapping("/create")
-    @RequireRole({"ADMIN", "MANAGER"})
-    @OperationLog("创建采购单")
+    @RequireRole({"ADMIN", "PURCHASER"})
+    @OperationLog("Create purchase order")
     public Result<Long> create(@Valid @RequestBody PurchaseOrderCreateDTO request) {
         JwtUserInfo currentUser = AuthContext.getCurrentUser();
         String creator = currentUser == null ? "system" : currentUser.getUsername();
@@ -58,8 +58,8 @@ public class PurchaseOrderController {
     }
 
     @PostMapping("/approve/{id}")
-    @RequireRole({"ADMIN", "MANAGER"})
-    @OperationLog("采购单审核入库")
+    @RequireRole({"ADMIN", "PURCHASER"})
+    @OperationLog("Approve purchase order")
     public Result<Void> approve(@PathVariable Long id) {
         JwtUserInfo currentUser = AuthContext.getCurrentUser();
         Long operatorId = currentUser == null ? 0L : currentUser.getUserId();

@@ -220,7 +220,7 @@ const fullData = ref([])
 const filteredData = ref([])    
 const categoryOptions = ref([]) 
 const isWarningMode = ref(false) 
-const canEdit = hasAnyRole(['ADMIN', 'MANAGER'])
+const canEdit = hasAnyRole(['ADMIN'])
 const canDelete = hasAnyRole(['ADMIN'])
 
 // === 分页配置 ===

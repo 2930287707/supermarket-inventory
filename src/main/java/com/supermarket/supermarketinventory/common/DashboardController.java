@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/dashboard")
 @CrossOrigin
-@RequireRole({"ADMIN", "MANAGER", "STAFF"})
+@RequireRole({"ADMIN", "STAFF", "PURCHASER", "ANALYST"})
 public class DashboardController {
 
     private final DashboardService dashboardService;

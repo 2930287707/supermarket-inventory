@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/goods")
 @CrossOrigin
-@RequireRole({"ADMIN", "MANAGER", "STAFF"})
+@RequireRole({"ADMIN", "STAFF", "PURCHASER"})
 public class GoodsController {
 
     private final GoodsService goodsService;
@@ -29,7 +29,7 @@ public class GoodsController {
     }
 
     @PostMapping("/add")
-    @RequireRole({"ADMIN", "MANAGER"})
+    @RequireRole({"ADMIN"})
     @OperationLog("新增商品")
     public Result<Void> add(@RequestBody Goods goods) {
         goodsService.addGoods(goods);
@@ -53,7 +53,7 @@ public class GoodsController {
     }
 
     @PostMapping("/update")
-    @RequireRole({"ADMIN", "MANAGER"})
+    @RequireRole({"ADMIN"})
     @OperationLog("修改商品")
     public Result<Void> update(@RequestBody Goods goods) {
         goodsService.updateGoods(goods);

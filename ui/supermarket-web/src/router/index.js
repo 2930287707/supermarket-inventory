@@ -93,6 +93,18 @@ const routes = [
         meta: { title: '操作日志', icon: 'Document' }
       }
     ]
+  },
+  {
+    path: '/user-manage',
+    component: Layout,
+    children: [
+      {
+        path: 'list',
+        name: '用户管理',
+        component: () => import('../views/user/index.vue'),
+        meta: { title: '用户管理', icon: 'User' }
+      }
+    ]
   }
 ]
 

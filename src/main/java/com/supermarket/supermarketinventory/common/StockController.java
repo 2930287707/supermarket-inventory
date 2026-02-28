@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/stock")
 @CrossOrigin
-@RequireRole({"ADMIN", "MANAGER", "STAFF"})
+@RequireRole({"ADMIN", "STAFF", "PURCHASER", "ANALYST"})
 public class StockController {
 
     private final StockService stockService;
@@ -27,7 +27,8 @@ public class StockController {
     }
 
     @PostMapping("/operate")
-    @OperationLog("库存出入库")
+    @RequireRole({"ADMIN", "STAFF", "PURCHASER"})
+    @OperationLog("Stock in/out operation")
     public Result<Void> operate(@RequestBody StockRecord stockRecord) {
         stockService.addStockRecord(stockRecord);
         return Result.success();

@@ -10,11 +10,19 @@ export function getCurrentUser() {
 
 export function getCurrentRole() {
   const user = getCurrentUser()
-  return (user.role || '').toUpperCase()
+  return normalizeRole(user.role)
 }
 
 export function hasAnyRole(roles = []) {
   const role = getCurrentRole()
   if (!role) return false
-  return roles.map(item => String(item).toUpperCase()).includes(role)
+  return roles.map(item => normalizeRole(item)).includes(role)
+}
+
+function normalizeRole(role) {
+  const normalized = String(role || '').trim().toUpperCase()
+  if (normalized === 'MANAGER') {
+    return 'ADMIN'
+  }
+  return normalized
 }

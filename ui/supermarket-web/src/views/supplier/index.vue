@@ -104,7 +104,7 @@ const submitLoading = ref(false)
 const dialogVisible = ref(false)
 const tableData = ref([])
 const supplierFormRef = ref(null)
-const canEdit = hasAnyRole(['ADMIN', 'MANAGER'])
+const canEdit = hasAnyRole(['ADMIN'])
 const canDelete = hasAnyRole(['ADMIN'])
 
 const form = ref({

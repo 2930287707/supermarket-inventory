@@ -10,6 +10,7 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 @Component
 public class JwtAuthInterceptor implements HandlerInterceptor {
@@ -66,11 +67,24 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
             throw new BusinessException(ErrorCode.FORBIDDEN, "账号未分配角色");
         }
 
-        String currentRole = userInfo.getRole();
+        String currentRole = normalizeRole(userInfo.getRole());
         boolean hasPermission = Arrays.stream(requireRole.value())
-                .anyMatch(allowedRole -> allowedRole.equalsIgnoreCase(currentRole));
+                .map(this::normalizeRole)
+                .anyMatch(allowedRole -> allowedRole.equals(currentRole));
         if (!hasPermission) {
             throw new BusinessException(ErrorCode.FORBIDDEN, "当前账号无此操作权限");
         }
+    }
+
+    private String normalizeRole(String role) {
+        if (!StringUtils.hasText(role)) {
+            return "";
+        }
+        String normalized = role.trim().toUpperCase(Locale.ROOT);
+        // Backward compatibility: historical MANAGER role now maps to ADMIN permissions.
+        if ("MANAGER".equals(normalized)) {
+            return "ADMIN";
+        }
+        return normalized;
     }
 }

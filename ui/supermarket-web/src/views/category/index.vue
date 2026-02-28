@@ -88,7 +88,7 @@ const btnLoading = ref(false)
 const tableData = ref([])
 const dialogVisible = ref(false)
 const formRef = ref(null)
-const canEdit = hasAnyRole(['ADMIN', 'MANAGER'])
+const canEdit = hasAnyRole(['ADMIN'])
 const canDelete = hasAnyRole(['ADMIN'])
 
 const form = ref({

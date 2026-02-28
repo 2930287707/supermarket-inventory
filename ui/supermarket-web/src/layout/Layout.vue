@@ -18,29 +18,33 @@
           <el-icon><Odometer /></el-icon>
           <template #title>首页概览</template>
         </el-menu-item>
-        <el-menu-item index="/goods/list">
+        <el-menu-item v-if="canViewGoods" index="/goods/list">
           <el-icon><Goods /></el-icon>
           <template #title>商品管理</template>
         </el-menu-item>
-        <el-menu-item index="/category/list">
+        <el-menu-item v-if="canViewCategory" index="/category/list">
           <el-icon><Menu /></el-icon>
           <template #title>分类管理</template>
         </el-menu-item>
-        <el-menu-item index="/supplier/list">
+        <el-menu-item v-if="canViewSupplier" index="/supplier/list">
           <el-icon><OfficeBuilding /></el-icon>
           <template #title>供应商管理</template>
         </el-menu-item>
-        <el-menu-item index="/purchase/list">
+        <el-menu-item v-if="canViewPurchase" index="/purchase/list">
           <el-icon><ShoppingCart /></el-icon>
           <template #title>采购管理</template>
         </el-menu-item>
-        <el-menu-item index="/record/list">
+        <el-menu-item v-if="canViewRecord" index="/record/list">
           <el-icon><List /></el-icon>
           <template #title>库存流水</template>
         </el-menu-item>
-        <el-menu-item index="/operation-log/list" :disabled="!canViewOperationLog">
+        <el-menu-item v-if="canViewOperationLog" index="/operation-log/list">
           <el-icon><Document /></el-icon>
           <template #title>操作日志</template>
+        </el-menu-item>
+        <el-menu-item v-if="canManageUsers" index="/user-manage/list">
+          <el-icon><User /></el-icon>
+          <template #title>用户管理</template>
         </el-menu-item>
       </el-menu>
     </aside>
@@ -64,6 +68,7 @@
             </div>
             <template #dropdown>
               <el-dropdown-menu>
+                <el-dropdown-item command="change-password">修改密码</el-dropdown-item>
                 <el-dropdown-item command="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -79,35 +84,140 @@
         </router-view>
       </main>
     </div>
+
+    <el-dialog v-model="changePwdVisible" title="修改密码" width="420px" @closed="resetPwdForm">
+      <el-form label-width="110px">
+        <el-form-item label="旧密码">
+          <el-input
+            v-model="pwdForm.oldPassword"
+            type="password"
+            show-password
+            placeholder="请输入旧密码"
+          />
+        </el-form-item>
+        <el-form-item label="新密码">
+          <el-input
+            v-model="pwdForm.newPassword"
+            type="password"
+            show-password
+            placeholder="至少 6 位"
+          />
+        </el-form-item>
+        <el-form-item label="确认密码">
+          <el-input
+            v-model="pwdForm.confirmPassword"
+            type="password"
+            show-password
+            placeholder="请再次输入新密码"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="changePwdVisible = false">取消</el-button>
+        <el-button type="primary" :loading="changePwdLoading" @click="submitChangePassword">确认</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { hasAnyRole } from '@/utils/auth'
+import { changePassword } from '@/api/user'
 
 const route = useRoute()
 const router = useRouter()
 const isCollapse = ref(false)
-const canViewOperationLog = hasAnyRole(['ADMIN', 'MANAGER'])
+const canViewGoods = hasAnyRole(['ADMIN', 'STAFF', 'PURCHASER'])
+const canViewCategory = hasAnyRole(['ADMIN', 'STAFF', 'PURCHASER'])
+const canViewSupplier = hasAnyRole(['ADMIN', 'STAFF', 'PURCHASER'])
+const canViewPurchase = hasAnyRole(['ADMIN', 'STAFF', 'PURCHASER'])
+const canViewRecord = hasAnyRole(['ADMIN', 'STAFF', 'PURCHASER', 'ANALYST'])
+const canViewOperationLog = hasAnyRole(['ADMIN', 'ANALYST'])
+const canManageUsers = hasAnyRole(['ADMIN'])
 
-const userStr = localStorage.getItem('user')
-const userObj = userStr ? JSON.parse(userStr) : {}
+const parseUser = () => {
+  const userStr = localStorage.getItem('user')
+  if (!userStr) return {}
+  try {
+    return JSON.parse(userStr) || {}
+  } catch (e) {
+    return {}
+  }
+}
+
+const userObj = parseUser()
 const userNick = userObj.nickname || userObj.username || '管理员'
 
+const changePwdVisible = ref(false)
+const changePwdLoading = ref(false)
+const pwdForm = reactive({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
+
 const activePath = computed(() => route.path)
-const currentTitle = computed(() => route.meta.title || '首页')
+const currentTitle = computed(() => route.meta.title || '首页概览')
 
 const toggleSidebar = () => {
   isCollapse.value = !isCollapse.value
 }
 
+const doLogout = async () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  await router.push('/login')
+}
+
+const resetPwdForm = () => {
+  pwdForm.oldPassword = ''
+  pwdForm.newPassword = ''
+  pwdForm.confirmPassword = ''
+}
+
+const submitChangePassword = async () => {
+  if (!userObj.username) {
+    ElMessage.error('无法识别当前用户，请重新登录')
+    return
+  }
+  if (!pwdForm.oldPassword || !pwdForm.newPassword || !pwdForm.confirmPassword) {
+    ElMessage.warning('请完整填写所有字段')
+    return
+  }
+  if (pwdForm.newPassword.length < 6) {
+    ElMessage.warning('新密码长度至少为 6 位')
+    return
+  }
+  if (pwdForm.newPassword !== pwdForm.confirmPassword) {
+    ElMessage.warning('两次输入的新密码不一致')
+    return
+  }
+
+  changePwdLoading.value = true
+  try {
+    await changePassword({
+      username: userObj.username,
+      oldPassword: pwdForm.oldPassword,
+      newPassword: pwdForm.newPassword
+    })
+    ElMessage.success('密码修改成功，请重新登录')
+    changePwdVisible.value = false
+    await doLogout()
+  } finally {
+    changePwdLoading.value = false
+  }
+}
+
 const handleCommand = async command => {
+  if (command === 'change-password') {
+    changePwdVisible.value = true
+    return
+  }
   if (command === 'logout') {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    await router.push('/login')
+    await doLogout()
   }
 }
 </script>

@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/category")
 @CrossOrigin
-@RequireRole({"ADMIN", "MANAGER", "STAFF"})
+@RequireRole({"ADMIN", "STAFF", "PURCHASER"})
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -33,7 +33,7 @@ public class CategoryController {
     }
 
     @PostMapping("/add")
-    @RequireRole({"ADMIN", "MANAGER"})
+    @RequireRole({"ADMIN"})
     @OperationLog("新增分类")
     public Result<Void> add(@RequestBody Category category) {
         categoryService.addCategory(category);
@@ -41,7 +41,7 @@ public class CategoryController {
     }
 
     @PostMapping("/update")
-    @RequireRole({"ADMIN", "MANAGER"})
+    @RequireRole({"ADMIN"})
     @OperationLog("修改分类")
     public Result<Void> update(@RequestBody Category category) {
         categoryService.updateCategory(category);

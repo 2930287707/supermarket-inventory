@@ -173,7 +173,7 @@ import {
   getPurchasePage
 } from '@/api/purchase'
 
-const canEdit = hasAnyRole(['ADMIN', 'MANAGER'])
+const canEdit = hasAnyRole(['ADMIN', 'PURCHASER'])
 const loading = ref(false)
 const submitLoading = ref(false)
 const supplierOptions = ref([])

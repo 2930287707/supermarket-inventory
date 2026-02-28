@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/supplier")
 @CrossOrigin
-@RequireRole({"ADMIN", "MANAGER", "STAFF"})
+@RequireRole({"ADMIN", "STAFF", "PURCHASER"})
 public class SupplierController {
 
     private final SupplierService supplierService;
@@ -33,16 +33,16 @@ public class SupplierController {
     }
 
     @PostMapping("/add")
-    @RequireRole({"ADMIN", "MANAGER"})
-    @OperationLog("新增供应商")
+    @RequireRole({"ADMIN"})
+    @OperationLog("Create supplier")
     public Result<Void> add(@RequestBody Supplier supplier) {
         supplierService.add(supplier);
         return Result.success();
     }
 
     @PostMapping("/update")
-    @RequireRole({"ADMIN", "MANAGER"})
-    @OperationLog("修改供应商")
+    @RequireRole({"ADMIN"})
+    @OperationLog("Update supplier")
     public Result<Void> update(@RequestBody Supplier supplier) {
         supplierService.update(supplier);
         return Result.success();
@@ -50,7 +50,7 @@ public class SupplierController {
 
     @DeleteMapping("/delete/{id}")
     @RequireRole({"ADMIN"})
-    @OperationLog("删除供应商")
+    @OperationLog("Delete supplier")
     public Result<Void> delete(@PathVariable Long id) {
         supplierService.delete(id);
         return Result.success();

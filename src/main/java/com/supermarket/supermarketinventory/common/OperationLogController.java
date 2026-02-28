@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/operation-log")
 @CrossOrigin
-@RequireRole({"ADMIN", "MANAGER"})
+@RequireRole({"ADMIN", "ANALYST"})
 public class OperationLogController {
 
     private final OperationLogService operationLogService;
