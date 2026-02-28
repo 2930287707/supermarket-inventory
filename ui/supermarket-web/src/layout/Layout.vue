@@ -1,21 +1,19 @@
 <template>
   <div class="app-wrapper">
-    <!-- 侧边栏 -->
-    <div class="sidebar-container" :class="{ 'is-collapse': isCollapse }">
+    <aside class="sidebar-container" :class="{ 'is-collapse': isCollapse }">
       <div class="logo">
-        <el-icon size="24" color="#fff" style="vertical-align: middle; margin-right: 8px;"><FilledShop /></el-icon>
-        <span v-if="!isCollapse">超市管理</span>
+        <el-icon size="24" color="#fff" style="vertical-align: middle; margin-right: 8px"><FilledShop /></el-icon>
+        <span v-if="!isCollapse">超市库存系统</span>
       </div>
       <el-menu
         :default-active="activePath"
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409EFF"
+        background-color="#2f3d52"
+        text-color="#c8d2e0"
+        active-text-color="#4fc08d"
         :collapse="isCollapse"
         router
         class="el-menu-vertical"
       >
-        <!-- 我们直接根据路由配置里的 path 来跳转 -->
         <el-menu-item index="/dashboard">
           <el-icon><Odometer /></el-icon>
           <template #title>首页概览</template>
@@ -32,17 +30,23 @@
           <el-icon><OfficeBuilding /></el-icon>
           <template #title>供应商管理</template>
         </el-menu-item>
+        <el-menu-item index="/purchase/list">
+          <el-icon><ShoppingCart /></el-icon>
+          <template #title>采购管理</template>
+        </el-menu-item>
         <el-menu-item index="/record/list">
           <el-icon><List /></el-icon>
           <template #title>库存流水</template>
         </el-menu-item>
+        <el-menu-item index="/operation-log/list" :disabled="!canViewOperationLog">
+          <el-icon><Document /></el-icon>
+          <template #title>操作日志</template>
+        </el-menu-item>
       </el-menu>
-    </div>
+    </aside>
 
-    <!-- 主体区域 -->
     <div class="main-container">
-      <!-- 顶部 Header -->
-      <div class="navbar">
+      <header class="navbar">
         <div class="left-nav">
           <el-icon class="hamburger" @click="toggleSidebar">
             <component :is="isCollapse ? 'Expand' : 'Fold'" />
@@ -52,7 +56,9 @@
         <div class="right-menu">
           <el-dropdown trigger="click" @command="handleCommand">
             <div class="avatar-wrapper">
-              <el-avatar shape="square" :size="30" style="background: #409EFF; margin-right: 8px;">{{ userNick.charAt(0) }}</el-avatar>
+              <el-avatar shape="square" :size="30" style="background: #4fc08d; margin-right: 8px">
+                {{ userNick.charAt(0) }}
+              </el-avatar>
               <span>{{ userNick }}</span>
               <el-icon class="el-icon--right"><CaretBottom /></el-icon>
             </div>
@@ -63,44 +69,46 @@
             </template>
           </el-dropdown>
         </div>
-      </div>
+      </header>
 
-      <!-- 内容显示区 -->
-      <div class="app-main">
+      <main class="app-main">
         <router-view v-slot="{ Component }">
           <transition name="fade-transform" mode="out-in">
             <component :is="Component" />
           </transition>
         </router-view>
-      </div>
+      </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { hasAnyRole } from '@/utils/auth'
 
 const route = useRoute()
 const router = useRouter()
 const isCollapse = ref(false)
+const canViewOperationLog = hasAnyRole(['ADMIN', 'MANAGER'])
 
 const userStr = localStorage.getItem('user')
 const userObj = userStr ? JSON.parse(userStr) : {}
-const userNick = userObj.nickname || 'Admin'
+const userNick = userObj.nickname || userObj.username || '管理员'
 
 const activePath = computed(() => route.path)
 const currentTitle = computed(() => route.meta.title || '首页')
 
 const toggleSidebar = () => {
-    isCollapse.value = !isCollapse.value
+  isCollapse.value = !isCollapse.value
 }
 
-const handleCommand = (command) => {
-    if (command === 'logout') {
-        localStorage.removeItem('user')
-        router.push('/login')
-    }
+const handleCommand = async command => {
+  if (command === 'logout') {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    await router.push('/login')
+  }
 }
 </script>
 
@@ -113,8 +121,8 @@ const handleCommand = (command) => {
 }
 
 .sidebar-container {
-  width: 210px;
-  background-color: #304156;
+  width: 220px;
+  background: linear-gradient(180deg, #2f3d52 0%, #243142 100%);
   height: 100%;
   transition: width 0.28s;
   overflow-y: auto;
@@ -122,24 +130,26 @@ const handleCommand = (command) => {
   display: flex;
   flex-direction: column;
 }
+
 .sidebar-container.is-collapse {
   width: 64px;
 }
 
 .logo {
-  height: 50px;
-  line-height: 50px;
+  height: 52px;
+  line-height: 52px;
   text-align: center;
   color: #fff;
   font-weight: 600;
-  font-size: 16px;
-  background-color: #2b2f3a;
+  font-size: 15px;
+  background: rgba(16, 28, 42, 0.55);
   overflow: hidden;
   white-space: nowrap;
 }
 
 .el-menu-vertical {
   border: none;
+  flex: 1;
 }
 
 .main-container {
@@ -147,13 +157,14 @@ const handleCommand = (command) => {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background-color: #f0f2f5;
+  background: linear-gradient(180deg, #eef4f1 0%, #f3f6fb 100%);
 }
 
 .navbar {
-  height: 50px;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,21,41,.08);
+  height: 52px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -169,15 +180,17 @@ const handleCommand = (command) => {
 
 .breadcrumb-text {
   font-weight: 600;
-  color: #606266;
+  color: #50607a;
 }
 
 .right-menu {
   cursor: pointer;
 }
+
 .avatar-wrapper {
   display: flex;
   align-items: center;
+  color: #364152;
 }
 
 .app-main {
@@ -186,17 +199,18 @@ const handleCommand = (command) => {
   overflow-y: auto;
 }
 
-/* 动画 */
 .fade-transform-enter-active,
 .fade-transform-leave-active {
-  transition: all 0.3s;
+  transition: all 0.25s;
 }
+
 .fade-transform-enter-from {
   opacity: 0;
-  transform: translateX(-30px);
+  transform: translateX(-18px);
 }
+
 .fade-transform-leave-to {
   opacity: 0;
-  transform: translateX(30px);
+  transform: translateX(18px);
 }
 </style>

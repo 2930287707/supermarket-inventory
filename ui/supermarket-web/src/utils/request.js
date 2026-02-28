@@ -1,22 +1,41 @@
-// src/utils/request.js
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const service = axios.create({
-  baseURL: 'http://localhost:8080', // 确保这里的端口和你后端的端口一致
-  timeout: 5000
+  baseURL: 'http://localhost:8080',
+  timeout: 8000
 })
 
-// 响应拦截器
+service.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  error => Promise.reject(error)
+)
+
 service.interceptors.response.use(
   response => {
     const res = response.data
-    // 如果后端返回的结构是 {code: 200, data: ...}，我们直接把 res 返回出去
-    return res
+    if (res.code === 200) {
+      return res
+    }
+
+    ElMessage.error(res.msg || '请求失败')
+    if (res.code === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject({ response: { data: res }, msg: res.msg || '请求失败' })
   },
   error => {
-    console.error('API Error:', error)
-    ElMessage.error(error.message || '请求失败')
+    ElMessage.error(error.message || '网络异常，请稍后重试')
     return Promise.reject(error)
   }
 )

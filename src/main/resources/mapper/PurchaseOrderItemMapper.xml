@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.supermarket.supermarketinventory.mapper.PurchaseOrderItemMapper">
+
+    <insert id="insertBatch">
+        INSERT INTO purchase_order_item (
+            order_id, goods_id, qty, price, amount, create_time
+        )
+        VALUES
+        <foreach collection="items" item="item" separator=",">
+            (#{item.orderId}, #{item.goodsId}, #{item.qty}, #{item.price}, #{item.amount}, NOW())
+        </foreach>
+    </insert>
+
+    <select id="selectByOrderId" resultType="com.supermarket.supermarketinventory.entity.PurchaseOrderItem">
+        SELECT
+            i.*,
+            g.name AS goods_name
+        FROM purchase_order_item i
+                 LEFT JOIN goods g ON i.goods_id = g.id
+        WHERE i.order_id = #{orderId}
+        ORDER BY i.id ASC
+    </select>
+</mapper>

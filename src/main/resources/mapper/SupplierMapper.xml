@@ -12,9 +12,14 @@
         SET name = #{name}, contact = #{contact}, phone = #{phone}, address = #{address}
         WHERE id = #{id}
     </update>
+
     <delete id="deleteById">
         DELETE FROM supplier WHERE id = #{id}
     </delete>
+
+    <select id="selectById" resultType="com.supermarket.supermarketinventory.entity.Supplier">
+        SELECT * FROM supplier WHERE id = #{id}
+    </select>
 
     <select id="findAll" resultType="com.supermarket.supermarketinventory.entity.Supplier">
         SELECT * FROM supplier ORDER BY create_time DESC

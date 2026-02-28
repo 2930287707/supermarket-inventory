@@ -1,28 +1,41 @@
-package com.supermarket.supermarketinventory.common; // 注意：通常 Controller 在 controller 包下，你这里是在 common 包？如果在 controller 包请自行修改 package
+package com.supermarket.supermarketinventory.common;
 
 import com.supermarket.supermarketinventory.entity.Goods;
+import com.supermarket.supermarketinventory.logging.OperationLog;
+import com.supermarket.supermarketinventory.security.RequireRole;
 import com.supermarket.supermarketinventory.service.GoodsService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/goods")
 @CrossOrigin
+@RequireRole({"ADMIN", "MANAGER", "STAFF"})
 public class GoodsController {
 
-    @Autowired
-    private GoodsService goodsService;
+    private final GoodsService goodsService;
 
-    // 新增商品
+    public GoodsController(GoodsService goodsService) {
+        this.goodsService = goodsService;
+    }
+
     @PostMapping("/add")
+    @RequireRole({"ADMIN", "MANAGER"})
+    @OperationLog("新增商品")
     public Result<Void> add(@RequestBody Goods goods) {
-        // 不需要 try-catch，Service 报错会自动被全局异常处理器捕获并返回 Result.error
         goodsService.addGoods(goods);
         return Result.success();
     }
 
-    // 分页查询列表
     @GetMapping("/list")
     public Result<PageResult<Goods>> list(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -30,27 +43,26 @@ public class GoodsController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String barcode
     ) {
-        // 调用 Service 的分页方法
         PageResult<Goods> pageResult = goodsService.getGoodsPage(pageNum, pageSize, name, barcode);
         return Result.success(pageResult);
     }
 
-    // 库存预警列表 (这个量通常不大，可以暂时不分页，或者你也可以给它加上分页)
     @GetMapping("/warning-list")
     public Result<List<Goods>> warningList() {
-        List<Goods> list = goodsService.getWarningGoods();
-        return Result.success(list);
+        return Result.success(goodsService.getWarningGoods());
     }
 
-    // 更新商品
     @PostMapping("/update")
+    @RequireRole({"ADMIN", "MANAGER"})
+    @OperationLog("修改商品")
     public Result<Void> update(@RequestBody Goods goods) {
         goodsService.updateGoods(goods);
         return Result.success();
     }
 
-    // 删除商品
     @DeleteMapping("/delete/{id}")
+    @RequireRole({"ADMIN"})
+    @OperationLog("删除商品")
     public Result<Void> delete(@PathVariable Long id) {
         goodsService.deleteGoods(id);
         return Result.success();

@@ -1,81 +1,88 @@
 <template>
-  <div class="dashboard-container">
-    <!-- 1. 顶部数据卡片 -->
-    <el-row :gutter="20">
-      <el-col :span="6" v-for="item in statCards" :key="item.title">
-        <el-card shadow="hover" class="stat-card" @click="handleCardClick(item.path)">
-          <div class="stat-content">
-            <div class="stat-icon" :style="{ backgroundColor: item.color }">
-              <el-icon><component :is="item.icon" /></el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-title">{{ item.title }}</div>
-              <div class="stat-number" :class="{ 'warning-text': item.isWarning && stats.warningCount > 0 }">
-                {{ stats[item.key] || 0 }}
-              </div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <!-- 2. 中间图表与快捷方式 -->
-    <el-row :gutter="20" style="margin-top: 20px;" class="chart-row">
-  <el-col :span="16">
-    <el-card shadow="hover" header="库存分类分布" class="full-height-card">
-      <div ref="pieChartRef" style="height: 350px;"></div>
-    </el-card>
-  </el-col>
-  <el-col :span="8">
-    <el-card shadow="hover" header="快捷入口" class="full-height-card">
-      <!-- 快捷入口容器 -->
-      <div class="shortcut-container">
-        <div class="shortcut-grid">
-          <el-button type="primary" plain icon="Plus" @click="$router.push('/goods/list')">商品录入</el-button>
-          <el-button type="success" plain icon="Top" @click="$router.push('/goods/list')">入库管理</el-button>
-          <el-button type="warning" plain icon="Bottom" @click="$router.push('/goods/list')">出库管理</el-button>
-          <el-button type="info" plain icon="User" @click="$router.push('/supplier/list')">供应商列表</el-button>
-        </div>
-        
-        <div class="system-assistant">
-          <el-divider content-position="left">系统助手</el-divider>
-          <div class="helper-content">
-            <p><el-icon><InfoFilled /></el-icon> 提示：库存低于预警值时，数值将变红。</p>
-            <p><el-icon><Calendar /></el-icon> 当前日期：{{ currentDate }}</p>
-          </div>
-        </div>
+  <div class="dashboard-page">
+    <section class="hero">
+      <div>
+        <h2>经营看板</h2>
+        <p>今天是 {{ currentDate }}，库存状态与经营指标实时更新。</p>
       </div>
-    </el-card>
-  </el-col>
-</el-row>
+      <el-button type="success" plain icon="Refresh" @click="loadDashboardData">刷新数据</el-button>
+    </section>
 
-    <!-- 3. 底部最近活动 -->
-    <el-row style="margin-top: 20px;">
-      <el-col :span="24">
-        <el-card shadow="hover" header="最近 5 笔库存变动记录">
-          <el-table :data="stats.recentRecords" border stripe>
-            <el-table-column label="变动时间" prop="createTime" width="180">
-                <template #default="scope">{{ formatTime(scope.row.createTime) }}</template>
-            </el-table-column>
-            <el-table-column label="商品名称" prop="goodsName" />
-            <el-table-column label="类型" width="100" align="center">
-              <template #default="scope">
-                <el-tag :type="scope.row.type === 1 ? 'success' : 'danger'">
-                  {{ scope.row.type === 1 ? '入库' : '出库' }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="数量" prop="qty" width="100" align="center" />
-            <el-table-column label="操作备注" prop="remark" show-overflow-tooltip />
-          </el-table>
+    <el-row :gutter="18" class="stats-row">
+      <el-col :xs="24" :sm="12" :lg="6" v-for="item in statCards" :key="item.title">
+        <el-card shadow="hover" class="stat-card" @click="handleCardClick(item.path)">
+          <div class="stat-head">
+            <span class="stat-icon" :style="{ backgroundColor: item.color }">
+              <el-icon><component :is="item.icon" /></el-icon>
+            </span>
+            <span class="stat-title">{{ item.title }}</span>
+          </div>
+          <div class="stat-value" :class="{ warn: item.isWarning && stats.warningCount > 0 }">
+            {{ stats[item.key] || 0 }}
+          </div>
         </el-card>
       </el-col>
     </el-row>
+
+    <el-row :gutter="18" class="content-row">
+      <el-col :xs="24" :lg="16">
+        <el-card shadow="never" class="panel-card">
+          <template #header>
+            <div class="panel-header">
+              <span>库存分类分布</span>
+            </div>
+          </template>
+          <div ref="pieChartRef" class="chart-box"></div>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :lg="8">
+        <el-card shadow="never" class="panel-card">
+          <template #header>
+            <div class="panel-header">
+              <span>快捷入口</span>
+            </div>
+          </template>
+          <div class="shortcut-grid">
+            <el-button type="primary" plain icon="Plus" @click="$router.push('/goods/list')">商品录入</el-button>
+            <el-button type="success" plain icon="Top" @click="$router.push('/goods/list')">入库管理</el-button>
+            <el-button type="warning" plain icon="Bottom" @click="$router.push('/goods/list')">出库管理</el-button>
+            <el-button type="info" plain icon="OfficeBuilding" @click="$router.push('/supplier/list')">供应商列表</el-button>
+          </div>
+          <div class="assistant">
+            <p><el-icon><InfoFilled /></el-icon> 库存低于预警值时，系统会在商品列表中高亮提示。</p>
+            <p><el-icon><Calendar /></el-icon> 可在库存流水页面查看最近出入库详情。</p>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <el-card shadow="never" class="panel-card recent-card">
+      <template #header>
+        <div class="panel-header">
+          <span>最近 5 条库存变动</span>
+        </div>
+      </template>
+      <el-table :data="stats.recentRecords || []" border stripe>
+        <el-table-column label="时间" prop="createTime" width="180">
+          <template #default="scope">{{ formatTime(scope.row.createTime) }}</template>
+        </el-table-column>
+        <el-table-column label="商品名称" prop="goodsName" />
+        <el-table-column label="类型" width="100" align="center">
+          <template #default="scope">
+            <el-tag :type="scope.row.type === 1 ? 'success' : 'danger'">
+              {{ scope.row.type === 1 ? '入库' : '出库' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="数量" prop="qty" width="100" align="center" />
+        <el-table-column label="备注" prop="remark" show-overflow-tooltip />
+      </el-table>
+    </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getStats } from '@/api/dashboard'
 import * as echarts from 'echarts'
@@ -84,58 +91,57 @@ const router = useRouter()
 const stats = ref({})
 const pieChartRef = ref(null)
 const currentDate = new Date().toLocaleDateString()
+let chartInstance = null
 
-// 定义卡片配置
 const statCards = [
-  { title: '商品总数', key: 'goodsCount', icon: 'Goods', color: '#409EFF', path: '/goods/list' },
-  { title: '今日销售', key: 'todaySales', icon: 'SoldOut', color: '#67C23A', path: '/record/list' },
-  { title: '库存预警', key: 'warningCount', icon: 'Warning', color: '#F56C6C', path: '/goods/list', isWarning: true },
-  { title: '合作伙伴', key: 'supplierCount', icon: 'OfficeBuilding', color: '#909399', path: '/supplier/list' }
+  { title: '商品总数', key: 'goodsCount', icon: 'Goods', color: '#4fa3ff', path: '/goods/list' },
+  { title: '今日销量', key: 'todaySales', icon: 'SoldOut', color: '#5cc07d', path: '/record/list' },
+  { title: '库存预警', key: 'warningCount', icon: 'Warning', color: '#f56c6c', path: '/goods/list', isWarning: true },
+  { title: '合作伙伴', key: 'supplierCount', icon: 'OfficeBuilding', color: '#8e97ab', path: '/supplier/list' }
 ]
 
-// 接口调用
 const loadDashboardData = async () => {
   try {
     const res = await getStats()
-    stats.value = res.data
-    initChart(res.data.pieChartData)
+    stats.value = res.data || {}
+    renderChart(stats.value.pieChartData || [])
   } catch (error) {
     console.error('获取首页数据失败', error)
   }
 }
 
-// 初始化饼图
-const initChart = (chartData) => {
-  if (!chartData) return
+const renderChart = chartData => {
   nextTick(() => {
-    const myChart = echarts.init(pieChartRef.value)
-    const option = {
-      tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)' },
-      legend: { bottom: '0%', left: 'center' },
+    if (!pieChartRef.value) return
+    if (!chartInstance) {
+      chartInstance = echarts.init(pieChartRef.value)
+      window.addEventListener('resize', () => chartInstance && chartInstance.resize())
+    }
+    chartInstance.setOption({
+      tooltip: { trigger: 'item', formatter: '{a}<br/>{b}: {c} ({d}%)' },
+      legend: { bottom: '2%', left: 'center' },
+      color: ['#4fa3ff', '#5cc07d', '#f5a623', '#8e97ab', '#f56c6c', '#6b7fd7'],
       series: [
         {
-          name: '分类库存分布',
+          name: '库存分布',
           type: 'pie',
-          radius: ['40%', '70%'],
+          radius: ['38%', '70%'],
           avoidLabelOverlap: false,
-          itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
-          emphasis: { label: { show: true, fontSize: '18', fontWeight: 'bold' } },
+          itemStyle: { borderRadius: 8, borderColor: '#fff', borderWidth: 2 },
+          emphasis: { label: { show: true, fontSize: 16, fontWeight: 'bold' } },
           data: chartData
         }
       ]
-    }
-    myChart.setOption(option)
-    // 窗口缩放自适应
-    window.addEventListener('resize', () => myChart.resize())
+    })
   })
 }
 
-const handleCardClick = (path) => {
+const handleCardClick = path => {
   router.push(path)
 }
 
-const formatTime = (timeStr) => {
-  if (!timeStr) return ''
+const formatTime = timeStr => {
+  if (!timeStr) return '-'
   return timeStr.replace('T', ' ').substring(0, 19)
 }
 
@@ -145,72 +151,143 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 整个容器的内边距 */
-.dashboard-container {
-  padding: 0;
+.dashboard-page {
+  min-height: calc(100vh - 96px);
+  background:
+    radial-gradient(circle at 90% -20%, rgba(92, 192, 125, 0.18), transparent 36%),
+    radial-gradient(circle at -10% 20%, rgba(79, 163, 255, 0.22), transparent 34%),
+    linear-gradient(180deg, #f5f9f6 0%, #eef3fb 100%);
+  border-radius: 14px;
+  padding: 16px;
 }
-/* 强制 Row 中的 Col 等高 */
-.chart-row {
+
+.hero {
   display: flex;
-  align-items: stretch;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  padding: 12px 16px;
 }
-.chart-row .el-col {
+
+.hero h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #2f3f58;
+}
+
+.hero p {
+  margin: 6px 0 0;
+  color: #627086;
+  font-size: 13px;
+}
+
+.stats-row {
+  margin-top: 14px;
+}
+
+.stat-card {
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+.stat-head {
   display: flex;
+  align-items: center;
 }
-/* 强制 Card 撑满高度 */
-.full-height-card {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
+
+.stat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
 }
-/* 让 Card 的 body 也撑满，这样内容才能垂直拉伸 */
-:deep(.el-card__body) {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+
+.stat-title {
+  font-size: 15px;
+  color: #445066;
 }
-/* 快捷入口容器：上下分布 */
-.shortcut-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* 关键：让按钮区和助手区分别在上下两头 */
+
+.stat-value {
+  margin-top: 10px;
+  font-size: 34px;
+  font-weight: 700;
+  color: #1f2d3d;
 }
+
+.stat-value.warn {
+  color: #e24d4d;
+}
+
+.content-row {
+  margin-top: 14px;
+}
+
+.panel-card {
+  border-radius: 12px;
+  border: 1px solid #e8eef6;
+}
+
+.panel-header {
+  font-size: 15px;
+  color: #344257;
+  font-weight: 600;
+}
+
+.chart-box {
+  height: 360px;
+}
+
 .shortcut-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-top: 10px;
+  gap: 12px;
 }
-/* 放大按钮效果 */
+
 .shortcut-grid .el-button {
-  height: 50px;
-  font-size: 15px;
-  margin-left: 0 !important; /* 修复 el-button 默认左间距 */
+  height: 44px;
+  margin-left: 0;
 }
-/* 系统助手区 */
-.system-assistant {
-  margin-top: auto; /* 保证它停留在底部 */
-  padding-bottom: 10px;
+
+.assistant {
+  margin-top: 16px;
+  background: #f4f7fc;
+  border-radius: 10px;
+  padding: 12px;
+  color: #58657b;
+  font-size: 13px;
 }
-.helper-content {
-  font-size: 14px;
-  color: #606266;
-  background: #f8f9fb;
-  padding: 15px;
-  border-radius: 8px;
-  line-height: 2;
+
+.assistant p {
+  margin: 6px 0;
+  display: flex;
+  align-items: center;
 }
-.helper-content .el-icon {
-  vertical-align: middle;
-  margin-right: 5px;
-  color: #409eff;
+
+.assistant .el-icon {
+  margin-right: 6px;
+  color: #4fa3ff;
 }
-/* 统计卡片样式保持不变... */
-.stat-card { cursor: pointer; transition: transform 0.3s; }
-.stat-card:hover { transform: translateY(-5px); }
-.stat-content { display: flex; align-items: center; }
-.stat-info { margin-left: 15px; }
-.stat-number { font-size: 24px; font-weight: bold; }
-.warning-text { color: #F56C6C; }
+
+.recent-card {
+  margin-top: 14px;
+}
+
+@media (max-width: 992px) {
+  .hero {
+    align-items: flex-start;
+    gap: 12px;
+    flex-direction: column;
+  }
+
+  .shortcut-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

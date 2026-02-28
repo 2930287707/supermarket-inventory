@@ -8,6 +8,10 @@ spring:
     url: ${DB_URL:jdbc:mysql://localhost:3306/supermarket_db?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:sql/operation_log.sql,classpath:sql/purchase_order.sql
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
@@ -18,6 +22,11 @@ pagehelper:
   helper-dialect: mysql
   reasonable: true
   support-methods-arguments: true
+
+jwt:
+  secret: ${JWT_SECRET:supermarket-inventory-jwt-secret-key-change-me}
+  expire-hours: ${JWT_EXPIRE_HOURS:24}
+  issuer: ${JWT_ISSUER:supermarket-inventory}
 
 ---
 spring:

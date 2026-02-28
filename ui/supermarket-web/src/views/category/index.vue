@@ -2,7 +2,7 @@
   <div class="app-container">
     <!-- 1. 顶部操作栏 -->
     <el-card shadow="never" class="toolbar">
-      <el-button type="primary" icon="Plus" @click="openDialog()">新增分类</el-button>
+      <el-button :disabled="!canEdit" type="primary" icon="Plus" @click="openDialog()">新增分类</el-button>
       <el-button icon="Refresh" @click="fetchData">刷新</el-button>
       <div class="tips">
         <el-icon><InfoFilled /></el-icon>
@@ -34,8 +34,9 @@
         
         <el-table-column label="操作" width="180" align="center" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" icon="Edit" @click="openDialog(scope.row)">编辑</el-button>
+            <el-button :disabled="!canEdit" link type="primary" icon="Edit" @click="openDialog(scope.row)">编辑</el-button>
             <el-popconfirm 
+              :disabled="!canDelete"
               title="确定删除此分类吗？" 
               confirm-button-text="强制删除" 
               cancel-button-text="取消"
@@ -43,7 +44,7 @@
               width="220"
             >
               <template #reference>
-                <el-button link type="danger" icon="Delete">删除</el-button>
+                <el-button :disabled="!canDelete" link type="danger" icon="Delete">删除</el-button>
               </template>
             </el-popconfirm>
           </template>
@@ -79,6 +80,7 @@
 import { ref, onMounted } from 'vue'
 import { getCategoryList, addCategory, updateCategory, deleteCategory } from '@/api/category'
 import { ElMessage } from 'element-plus'
+import { hasAnyRole } from '@/utils/auth'
 
 // === 状态定义 ===
 const loading = ref(false)
@@ -86,6 +88,8 @@ const btnLoading = ref(false)
 const tableData = ref([])
 const dialogVisible = ref(false)
 const formRef = ref(null)
+const canEdit = hasAnyRole(['ADMIN', 'MANAGER'])
+const canDelete = hasAnyRole(['ADMIN'])
 
 const form = ref({
   id: null,

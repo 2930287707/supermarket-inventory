@@ -32,7 +32,7 @@
           <el-button type="warning" plain icon="Warning" @click="toggleWarningMode">
             {{ isWarningMode ? '显示全部' : '只看缺货' }}
           </el-button>
-          <el-button type="primary" icon="Plus" @click="openGoodsDialog()">新增商品</el-button>
+          <el-button :disabled="!canEdit" type="primary" icon="Plus" @click="openGoodsDialog()">新增商品</el-button>
         </el-col>
       </el-row>
     </el-card>
@@ -90,10 +90,10 @@
 
         <el-table-column label="管理" width="120" align="center" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" icon="Edit" @click="openGoodsDialog(scope.row)"></el-button>
-            <el-popconfirm title="确定删除吗？" width="220" @confirm="handleDelete(scope.row.id)">
+            <el-button :disabled="!canEdit" link type="primary" icon="Edit" @click="openGoodsDialog(scope.row)"></el-button>
+            <el-popconfirm :disabled="!canDelete" title="确定删除吗？" width="220" @confirm="handleDelete(scope.row.id)">
                <template #reference>
-                 <el-button link type="danger" icon="Delete"></el-button>
+                 <el-button :disabled="!canDelete" link type="danger" icon="Delete"></el-button>
                </template>
             </el-popconfirm>
           </template>
@@ -211,6 +211,7 @@ import { getGoodsList, addGoods, updateGoods, deleteGoods } from '@/api/goods'
 import { getCategoryList } from '@/api/category'
 import { operateStock } from '@/api/stock'
 import { ElMessage } from 'element-plus'
+import { hasAnyRole } from '@/utils/auth'
 
 // === 核心数据 ===
 const loading = ref(false)
@@ -219,6 +220,8 @@ const fullData = ref([])
 const filteredData = ref([])    
 const categoryOptions = ref([]) 
 const isWarningMode = ref(false) 
+const canEdit = hasAnyRole(['ADMIN', 'MANAGER'])
+const canDelete = hasAnyRole(['ADMIN'])
 
 // === 分页配置 ===
 const currentPage = ref(1)
