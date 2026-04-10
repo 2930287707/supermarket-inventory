@@ -1,4 +1,6 @@
-package com.supermarket.supermarketinventory.common;
+package com.supermarket.supermarketinventory.controller;
+
+import com.supermarket.supermarketinventory.common.Result;
 
 import com.supermarket.supermarketinventory.dto.StockRecordDTO;
 import com.supermarket.supermarketinventory.entity.StockRecord;

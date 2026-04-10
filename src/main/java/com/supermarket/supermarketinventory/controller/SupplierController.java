@@ -1,9 +1,11 @@
-package com.supermarket.supermarketinventory.common;
+package com.supermarket.supermarketinventory.controller;
 
-import com.supermarket.supermarketinventory.entity.Category;
+import com.supermarket.supermarketinventory.common.Result;
+
+import com.supermarket.supermarketinventory.entity.Supplier;
 import com.supermarket.supermarketinventory.logging.OperationLog;
 import com.supermarket.supermarketinventory.security.RequireRole;
-import com.supermarket.supermarketinventory.service.CategoryService;
+import com.supermarket.supermarketinventory.service.SupplierService;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,43 +18,43 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/category")
+@RequestMapping("/supplier")
 @CrossOrigin
 @RequireRole({"ADMIN", "STAFF", "PURCHASER"})
-public class CategoryController {
+public class SupplierController {
 
-    private final CategoryService categoryService;
+    private final SupplierService supplierService;
 
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
+    public SupplierController(SupplierService supplierService) {
+        this.supplierService = supplierService;
     }
 
     @GetMapping("/list")
-    public Result<List<Category>> list() {
-        return Result.success(categoryService.getAll());
+    public Result<List<Supplier>> list() {
+        return Result.success(supplierService.getAll());
     }
 
     @PostMapping("/add")
     @RequireRole({"ADMIN"})
-    @OperationLog("新增分类")
-    public Result<Void> add(@RequestBody Category category) {
-        categoryService.addCategory(category);
+    @OperationLog("Create supplier")
+    public Result<Void> add(@RequestBody Supplier supplier) {
+        supplierService.add(supplier);
         return Result.success();
     }
 
     @PostMapping("/update")
     @RequireRole({"ADMIN"})
-    @OperationLog("修改分类")
-    public Result<Void> update(@RequestBody Category category) {
-        categoryService.updateCategory(category);
+    @OperationLog("Update supplier")
+    public Result<Void> update(@RequestBody Supplier supplier) {
+        supplierService.update(supplier);
         return Result.success();
     }
 
     @DeleteMapping("/delete/{id}")
     @RequireRole({"ADMIN"})
-    @OperationLog("删除分类")
+    @OperationLog("Delete supplier")
     public Result<Void> delete(@PathVariable Long id) {
-        categoryService.deleteCategory(id);
+        supplierService.delete(id);
         return Result.success();
     }
 }

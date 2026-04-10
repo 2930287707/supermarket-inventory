@@ -1,4 +1,7 @@
-package com.supermarket.supermarketinventory.common;
+package com.supermarket.supermarketinventory.controller;
+
+import com.supermarket.supermarketinventory.common.Result;
+import com.supermarket.supermarketinventory.common.PageResult;
 
 import com.supermarket.supermarketinventory.dto.PurchaseOrderCreateDTO;
 import com.supermarket.supermarketinventory.entity.PurchaseOrder;
