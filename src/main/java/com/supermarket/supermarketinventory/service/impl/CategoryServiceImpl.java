@@ -18,12 +18,14 @@ public class CategoryServiceImpl implements CategoryService {
     private GoodsMapper goodsMapper; // 注入 GoodsMapper
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void addCategory(Category category) {
         Category exist = categoryMapper.selectByName(category.getName());
         if (exist != null) {
             throw new RuntimeException("分类名称已存在");
         }
         if(category.getSortOrder() == null) category.setSortOrder(0);
+        categoryMapper.increaseSortOrderFrom(category.getSortOrder());
         categoryMapper.insert(category);
     }
 

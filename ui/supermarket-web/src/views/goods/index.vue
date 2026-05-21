@@ -175,7 +175,48 @@
       </template>
     </el-dialog>
 
-    <!-- 弹窗2：快速出入库 -->
+    <!-- 弹窗2：快捷入口选择商品 -->
+    <el-dialog
+      v-model="stockSelectDialogVisible"
+      :title="stockType === 1 ? '选择入库商品' : '选择出库商品'"
+      width="760px"
+      append-to-body
+    >
+      <el-input
+        v-model="stockSelectKeyword"
+        placeholder="搜索商品名称或条码"
+        clearable
+        prefix-icon="Search"
+        style="margin-bottom: 12px"
+      />
+      <el-table
+        :key="stockSelectKeyword"
+        :data="stockSelectData"
+        border
+        stripe
+        height="360px"
+        style="width: 100%"
+      >
+        <el-table-column prop="barcode" label="条形码" width="140" />
+        <el-table-column prop="name" label="商品名称" min-width="160" show-overflow-tooltip />
+        <el-table-column prop="category" label="分类" width="120" align="center" />
+        <el-table-column prop="spec" label="规格" width="100" show-overflow-tooltip />
+        <el-table-column prop="stockCurrent" label="当前库存" width="100" align="center" />
+        <el-table-column label="操作" width="100" align="center" fixed="right">
+          <template #default="scope">
+            <el-button
+              size="small"
+              :type="stockType === 1 ? 'success' : 'warning'"
+              @click="selectStockGoods(scope.row)"
+            >
+              选择
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
+
+    <!-- 弹窗3：快速出入库 -->
     <el-dialog 
       v-model="stockDialogVisible" 
       :title="stockType === 1 ? '🛒 快速入库' : '📤 快速出库'" 
@@ -207,6 +248,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { getGoodsList, addGoods, updateGoods, deleteGoods } from '@/api/goods'
 import { getCategoryList } from '@/api/category'
 import { operateStock } from '@/api/stock'
@@ -222,6 +264,8 @@ const categoryOptions = ref([])
 const isWarningMode = ref(false) 
 const canEdit = hasAnyRole(['ADMIN'])
 const canDelete = hasAnyRole(['ADMIN'])
+const route = useRoute()
+const router = useRouter()
 
 // === 分页配置 ===
 const currentPage = ref(1)
@@ -232,6 +276,18 @@ const pagedData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
   const end = start + pageSize.value
   return list.slice(start, end)
+})
+
+const stockSelectData = computed(() => {
+  const list = Array.isArray(fullData.value) ? fullData.value : []
+  const keyword = stockSelectKeyword.value.trim().toLowerCase()
+  if (!keyword) return list
+  return list.filter(item =>
+    String(item.name || '').toLowerCase().includes(keyword) ||
+    String(item.barcode || '').toLowerCase().includes(keyword) ||
+    String(item.category || '').toLowerCase().includes(keyword) ||
+    String(item.spec || '').toLowerCase().includes(keyword)
+  )
 })
 
 const queryParams = reactive({
@@ -253,6 +309,8 @@ const goodsRules = {
 }
 
 // === 库存弹窗 ===
+const stockSelectDialogVisible = ref(false)
+const stockSelectKeyword = ref('')
 const stockDialogVisible = ref(false)
 const stockType = ref(1)
 const currentStockItem = ref({})
@@ -263,7 +321,12 @@ const currentOperatorId = 1
 const initData = async () => {
   loading.value = true
   try {
-    const [goodsRes, catRes] = await Promise.all([getGoodsList(), getCategoryList()])
+    // 修复：后端 /goods/list 默认只返回 pageSize=10 条，
+    // 而前端是"拉全量 + 本地分页/筛选"模式，必须传一个大的 pageSize 把全部商品拉回来。
+    const [goodsRes, catRes] = await Promise.all([
+      getGoodsList({ pageNum: 1, pageSize: 9999 }),
+      getCategoryList()
+    ])
     
     // 1. 处理【商品数据】
     // 你的日志显示：Goods -> code:200, data: { total:5, list: [...] }
@@ -288,6 +351,7 @@ const initData = async () => {
     }
 
     handleFilter() // 初始化显示
+    openStockDialogFromRoute()
 
   } catch (e) {
     console.error('加载出错:', e)
@@ -323,6 +387,24 @@ const handleFilter = () => {
 const toggleWarningMode = () => {
   isWarningMode.value = !isWarningMode.value
   handleFilter()
+}
+
+const openStockDialogFromRoute = () => {
+  const stockTypeParam = route.query.stockType
+  if (stockTypeParam !== 'in' && stockTypeParam !== 'out') return
+  if (!filteredData.value.length) {
+    ElMessage.warning('暂无商品可操作')
+    return
+  }
+  stockType.value = stockTypeParam === 'in' ? 1 : 2
+  stockSelectKeyword.value = ''
+  stockSelectDialogVisible.value = true
+  router.replace('/goods/list')
+}
+
+const selectStockGoods = (row) => {
+  stockSelectDialogVisible.value = false
+  openStockDialog(row, stockType.value)
 }
 
 // === 商品增删改 ===

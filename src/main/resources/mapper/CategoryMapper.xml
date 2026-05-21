@@ -14,6 +14,14 @@
             update_time = NOW()
         WHERE id = #{id}
     </update>
+
+    <update id="increaseSortOrderFrom">
+        UPDATE category
+        SET sort_order = sort_order + 1,
+            update_time = NOW()
+        WHERE sort_order >= #{sortOrder}
+    </update>
+
     <delete id="deleteById">
         DELETE FROM category WHERE id = #{id}
     </delete>

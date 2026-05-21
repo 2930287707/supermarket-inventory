@@ -11,4 +11,5 @@ public interface CategoryMapper {
     List<Category> findAll();
     Category selectByName(String name);
     Category selectById(Long id);
+    int increaseSortOrderFrom(Integer sortOrder);
 }

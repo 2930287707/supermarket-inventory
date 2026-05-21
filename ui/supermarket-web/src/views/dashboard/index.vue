@@ -44,8 +44,8 @@
           </template>
           <div class="shortcut-grid">
             <el-button type="primary" plain icon="Plus" @click="$router.push('/goods/list')">商品录入</el-button>
-            <el-button type="success" plain icon="Top" @click="$router.push('/goods/list')">入库管理</el-button>
-            <el-button type="warning" plain icon="Bottom" @click="$router.push('/goods/list')">出库管理</el-button>
+            <el-button type="success" plain icon="Top" @click="$router.push('/goods/list?stockType=in')">入库管理</el-button>
+            <el-button type="warning" plain icon="Bottom" @click="$router.push('/goods/list?stockType=out')">出库管理</el-button>
             <el-button type="info" plain icon="OfficeBuilding" @click="$router.push('/supplier/list')">供应商列表</el-button>
           </div>
           <div class="assistant">

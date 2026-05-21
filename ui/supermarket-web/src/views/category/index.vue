@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="app-container">
     <!-- 1. 顶部操作栏 -->
     <el-card shadow="never" class="toolbar">
@@ -131,7 +131,8 @@ const openDialog = (row) => {
   if (row) {
     form.value = { ...row } // 克隆对象，防止修改表格时直接变动
   } else {
-    form.value = { id: null, name: '', sortOrder: 0 }
+    const maxSort = tableData.value.reduce((max, item) => Math.max(max, item.sortOrder || 0), 0)
+    form.value = { id: null, name: '', sortOrder: maxSort + 1 }
   }
   dialogVisible.value = true
 }
