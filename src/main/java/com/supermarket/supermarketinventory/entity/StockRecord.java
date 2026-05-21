@@ -11,4 +11,5 @@ public class StockRecord {
     private Long qty;
     private String remark;
     private LocalDateTime dateTime;
+    private LocalDateTime createTime;
 }

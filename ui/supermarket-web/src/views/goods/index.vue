@@ -350,8 +350,14 @@ const initData = async () => {
        categoryOptions.value = catRes.data || []
     }
 
+    if (route.query.warning === '1') {
+      isWarningMode.value = true
+    }
     handleFilter() // 初始化显示
     openStockDialogFromRoute()
+    if (route.query.warning === '1') {
+      router.replace('/goods/list')
+    }
 
   } catch (e) {
     console.error('加载出错:', e)

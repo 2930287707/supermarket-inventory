@@ -96,7 +96,7 @@ let chartInstance = null
 const statCards = [
   { title: '商品总数', key: 'goodsCount', icon: 'Goods', color: '#4fa3ff', path: '/goods/list' },
   { title: '今日销量', key: 'todaySales', icon: 'SoldOut', color: '#5cc07d', path: '/record/list' },
-  { title: '库存预警', key: 'warningCount', icon: 'Warning', color: '#f56c6c', path: '/goods/list', isWarning: true },
+  { title: '库存预警', key: 'warningCount', icon: 'Warning', color: '#f56c6c', path: '/goods/list?warning=1', isWarning: true },
   { title: '合作伙伴', key: 'supplierCount', icon: 'OfficeBuilding', color: '#8e97ab', path: '/supplier/list' }
 ]
 
